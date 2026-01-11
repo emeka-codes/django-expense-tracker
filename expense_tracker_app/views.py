@@ -4,10 +4,13 @@ from datetime import date
 from django.db.models import Sum
 from .models import Expenses
 from django.utils import timezone
-from .forms import ExpenseForm
+from .forms import ExpenseForm, SignUpForm
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
+@login_required(login_url='/app/login')
 def display_home(request):
     form = ExpenseForm()
 
@@ -15,10 +18,12 @@ def display_home(request):
         if 'submit_expense' in request.POST:
             form = ExpenseForm(request.POST)
             if form.is_valid():
-                form.save()
+                expense= form.save(commit=False)
+                expense.user= request.user
+                expense.save()
                 return redirect('/app/home')
     today = timezone.now().date()
-    today_expenses = Expenses.objects.filter(date__date=today)
+    today_expenses = Expenses.objects.filter(user= request.user, date__date=today)
     today_total= today_expenses.aggregate(total=Sum("amount"))["total"] or 0
 
     return render(request, 'home.html', {'today_expenses': today_expenses, 'today_total': today_total, 'form': form})
@@ -47,6 +52,36 @@ def edit_expense(request):
 def search_by_date(request):
     if request.method == "POST":
         searched_date = request.POST.get("date")
-        filtered_expenses = Expenses.objects.filter(date__date=searched_date)
+        filtered_expenses = Expenses.objects.filter(user= request.user, date__date=searched_date)
         total_amount = filtered_expenses.aggregate(total=Sum("amount"))["total"] or 0
         return render(request, 'home.html', {'filtered_expenses': filtered_expenses, 'total_amount': total_amount})
+    
+def user_login(request):
+    if request.method == "POST":
+        if 'login' in request.POST:
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('/app/home')
+            else:
+                return HttpResponse("Invalid credentials")
+    return render(request, 'login.html')
+
+
+def user_logout(request):
+    logout(request)
+    return redirect('/app/home')
+
+def user_signup(request):
+    form = SignUpForm(request.POST)
+    if request.method =='POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user= form.save()
+            login(request, user)
+            
+            return redirect('/app/home')
+    return render(request, 'signup.html', {'form': form})
+   

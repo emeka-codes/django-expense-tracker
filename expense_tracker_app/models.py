@@ -3,6 +3,7 @@ import datetime
 
 # Create your models here.
 class Expenses(models.Model):
+    user= models.ForeignKey('auth.User', on_delete=models.CASCADE, null=True)
     name= models.CharField()
     product= models.CharField()
     amount= models.IntegerField()

@@ -6,12 +6,18 @@
     <link rel="stylesheet" href="{% static 'expense_tracker_app/style.css' %}">
 </head>
 <body>
-    <h1>Expenses Tracker</h1>
+
+    
+    <div class="top-header">
+        <h1>Expenses Tracker</h1>
+        <button><a href="{% url 'user_logout' %}">Logout</a></button>
+    </div>
     <div class="add-expense">
         <button onclick="OpenAddExpenseModal()">Add Expenses</button>
     </div>
 
     
+
     <form method="post" action="{% url 'delete_expense' %}">
         {% csrf_token %}
         <button type="submit" class="delete-button" name="delete_expense">Delete selected</button>
@@ -25,7 +31,7 @@
                     <th>Description</th>
                     <th>Date</th>
                     
-                   
+                
                 </tr>
                 {% for expense in today_expenses %}
                 <tr>
@@ -130,8 +136,9 @@
                     <div class="submit-button">
                         <button type="submit" name="submit_expense">Add</button>
                     </div>
-        </div>
             </form>
+        </div>
+            
             <br>
             <a href="/">Back to Home</a>
         
@@ -175,8 +182,7 @@
         <input type="date" id="date" name="date" required>
         <button type="submit">Search by Date</button>
     </form>
-
-
+    
     <script>
         function OpenAddExpenseModal() {
             document.getElementById('expense_modal').style.display= 'flex';
