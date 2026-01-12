@@ -157,6 +157,10 @@ button {
     border-radius: 5px;
     cursor: pointer;
 }
+a{
+    text-decoration: none;
+    color: white;
+}
 
 button:hover {
     background-color: #45a049;
